@@ -28,6 +28,7 @@ A modern, real-time chat application built with React, TypeScript, and Tailwind 
 - Smooth animations and transitions
 - Clean, Discord/Slack-inspired interface
 - Floating cards and glow effects
+- **Dark/Light theme toggle** via settings menu
 
 ### 📱 **Additional Features**
 - Local storage for data persistence
@@ -111,6 +112,11 @@ src/
 - Delete chats you no longer need
 - View message timestamps and date separators
 
+### 5. **Theme Settings**
+- Click the settings icon in the top right corner
+- Toggle between dark and light themes
+- Your preference is saved automatically
+
 ## 🔧 Configuration
 
 ### Customizing the Design
@@ -173,7 +179,7 @@ The app can be deployed on any static hosting service:
 - [ ] File sharing
 - [ ] Group chat management
 - [ ] Push notifications
-- [ ] Dark/light theme toggle
+- [x] Dark/light theme toggle
 - [ ] Message reactions
 - [ ] User presence indicators
 - [ ] Chat search functionality

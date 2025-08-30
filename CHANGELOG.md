@@ -8,22 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Emoji picker support for chat messages
 - Mobile responsiveness improvements for chat interface
 - Enhanced state management for mobile sidebar
 - Callback functions for better component communication
 - Improved CSS transitions for sidebar animations
+- Auto-open sidebar on mobile login when user has chats
+- Added "View Chats" button on mobile welcome screen for better UX
 
 ### Changed
 - Fixed conditional rendering logic for mobile views
 - Updated mobile detection to handle window resize events
 - Improved navigation between chat list and chat window on mobile
 - Enhanced profile access from mobile sidebar
+- Auto-select first chat when only one exists on mobile
+- Optimized mobile layout to eliminate blank spaces
 
 ### Fixed
 - Sidebar not properly closing when navigating to profile on mobile
 - Chat window positioning when sidebar is open on mobile
 - Inconsistent mobile layout due to percentage-based widths
 - Welcome screen showing incorrectly on mobile
+- Blank space issue on mobile when neither chat list nor chat window was visible
 
 ## [0.1.0] - 2025-08-30
 

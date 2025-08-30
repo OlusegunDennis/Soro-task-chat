@@ -4,10 +4,10 @@ import { ChatWindow } from '../components/ChatWindow';
 import { useChatStore } from '../stores/chatStore';
 import { useAuthStore } from '../stores/authStore';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, MessageCircle } from 'lucide-react';
 
 export function ChatPage() {
-  const { loadChats, activeChat } = useChatStore();
+  const { loadChats, activeChat, chats } = useChatStore();
   const { user } = useAuthStore();
   const [isMobile, setIsMobile] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -31,6 +31,13 @@ export function ChatPage() {
       setIsSidebarOpen(false);
     }
   }, [isMobile]);
+
+  // Auto-open sidebar on mobile when user logs in and has chats but no active chat
+  useEffect(() => {
+    if (isMobile && user && chats.length > 0 && !activeChat) {
+      setIsSidebarOpen(true);
+    }
+  }, [isMobile, user, chats.length, activeChat]);
 
   useEffect(() => {
     if (user) {
@@ -68,7 +75,14 @@ export function ChatPage() {
       {(!isMobile || isSidebarOpen) && <ChatSidebar isOpen={isMobile && isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />}
       
       {/* Show chat window on desktop or when a chat is selected on mobile */}
-      {(!isMobile || activeChat) && <ChatWindow isSidebarOpen={isMobile && isSidebarOpen} onCloseSidebar={() => setIsSidebarOpen(false)} />}
+      {(!isMobile || activeChat) && (
+        <ChatWindow 
+          isSidebarOpen={isMobile && isSidebarOpen} 
+          onCloseSidebar={() => setIsSidebarOpen(false)} 
+          isMobile={isMobile}
+          isActive={!!activeChat}
+        />
+      )}
       
       {/* Show placeholder on mobile when no chat is selected and sidebar is closed */}
       {isMobile && !activeChat && !isSidebarOpen && (
@@ -81,6 +95,13 @@ export function ChatPage() {
             </div>
             <h2 className="text-xl font-semibold mb-2">Welcome to Chat Pulse</h2>
             <p className="text-muted-foreground">Select a chat to start messaging</p>
+            <Button 
+              onClick={toggleSidebar}
+              className="mt-4"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              View Chats
+            </Button>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,13 @@ export function ChatSidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: (
   
   const { chats, activeChat, setActiveChat, createChat, deleteChat } = useChatStore();
   const { user, upgradeToPremium } = useAuthStore();
+
+  // Auto-select first chat if there's only one and none is selected
+  useEffect(() => {
+    if (chats.length === 1 && !activeChat) {
+      setActiveChat(chats[0].id);
+    }
+  }, [chats, activeChat, setActiveChat]);
   
   const handleCreateChat = () => {
     if (!newChatName.trim() || !user) return;

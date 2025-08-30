@@ -3,16 +3,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Send, MoreVertical, ArrowLeft } from 'lucide-react';
+import { Send, MoreVertical, ArrowLeft, Smile } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useAuthStore } from '../stores/authStore';
+import Picker from 'emoji-picker-react';
 import './ChatSidebar.css'; // Import the CSS file
+import './ChatWindow.css'; // Import the CSS file for emoji picker
 
-export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: boolean; onCloseSidebar?: () => void; }) {
+export function ChatWindow({ isSidebarOpen, onCloseSidebar, isMobile, isActive }: { isSidebarOpen?: boolean; onCloseSidebar?: () => void; isMobile?: boolean; isActive?: boolean; }) {
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
   
   const { 
     chats, 
@@ -29,6 +33,23 @@ export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: 
   const currentMessages = activeChat ? messages[activeChat] || [] : [];
   const currentTypingUsers = typingUsers.filter(u => u.chatId === activeChat && u.userId !== user?.id);
   
+  // Handle clicks outside emoji picker
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+  
   useEffect(() => {
     scrollToBottom();
   }, [currentMessages, currentTypingUsers]);
@@ -36,6 +57,8 @@ export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // ... existing code ...
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !activeChat || !user) return;
@@ -48,7 +71,12 @@ export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: 
       setTyping(activeChat, user.id, user.username, false);
       setIsTyping(false);
     }
+    
+    // Hide emoji picker after sending
+    setShowEmojiPicker(false);
   };
+
+  // ... existing code ...
 
   const handleInputChange = (value: string) => {
     setMessageInput(value);
@@ -73,7 +101,18 @@ export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: 
         setIsTyping(false);
       }
     }, 2000);
+    
+    // Close emoji picker when user starts typing
+    if (showEmojiPicker && value.length > messageInput.length) {
+      setShowEmojiPicker(false);
+    }
   };
+
+  const handleEmojiClick = (emojiData: { emoji: string }) => {
+    setMessageInput(prev => prev + emojiData.emoji);
+  };
+
+  // ... existing code ...
 
   const handleBackToChats = () => {
     setActiveChat(null);
@@ -120,7 +159,7 @@ export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: 
   }
 
   return (
-    <div className={`flex-1 flex flex-col bg-background chat-window ${isSidebarOpen ? 'shifted' : ''}`}>
+    <div className={`flex-1 flex flex-col bg-background chat-window ${isSidebarOpen ? 'shifted' : ''} ${isMobile && isActive ? 'chat-window-full' : ''}`}>
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
@@ -240,8 +279,21 @@ export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: 
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-border bg-card">
+      <div className="p-4 border-t border-border bg-card relative">
+        {showEmojiPicker && (
+          <div ref={emojiPickerRef} className="emoji-picker-container">
+            <Picker onEmojiClick={handleEmojiClick} />
+          </div>
+        )}
         <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="h-10 w-10 p-0"
+          >
+            <Smile className="h-5 w-5" />
+          </Button>
           <Input
             placeholder="Type a message..."
             value={messageInput}

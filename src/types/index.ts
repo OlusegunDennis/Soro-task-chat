@@ -5,6 +5,7 @@ export interface User {
   avatar: string;
   isPremium: boolean;
   joinedAt: Date;
+  about?: string;
 }
 
 export interface Chat {
