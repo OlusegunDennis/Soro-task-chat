@@ -1,20 +1,25 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, MessageCircle, Crown, Settings, LogOut, Trash2 } from 'lucide-react';
+import { Plus, MessageCircle, Crown, Settings, Trash2, User, X } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useAuthStore } from '../stores/authStore';
 import { toast } from '@/hooks/use-toast';
+import { SettingsModal } from './SettingsModal';
+import './ChatSidebar.css';
 
-export function ChatSidebar() {
+export function ChatSidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void; }) {
+  const navigate = useNavigate();
   const [newChatName, setNewChatName] = useState('');
   const [showNewChatInput, setShowNewChatInput] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const { chats, activeChat, setActiveChat, createChat, deleteChat } = useChatStore();
-  const { user, logout, upgradeToPremium } = useAuthStore();
+  const { user, upgradeToPremium } = useAuthStore();
   
   const handleCreateChat = () => {
     if (!newChatName.trim() || !user) return;
@@ -58,16 +63,22 @@ export function ChatSidebar() {
   if (!user) return null;
 
   return (
-    <div className="w-80 bg-card border-r border-border flex flex-col h-full">
+    <div className={`w-80 bg-card border-r border-border flex flex-col h-full md:w-64 lg:w-80 chat-sidebar ${isOpen ? 'open' : ''}`}>
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => {
+              navigate('/profile');
+              if (onClose) onClose();
+            }}
+          >
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <div>
+            <div className="hidden md:block">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm">{user.username}</span>
                 {user.isPremium && <Crown className="h-4 w-4 text-yellow-500" />}
@@ -79,11 +90,14 @@ export function ChatSidebar() {
             </div>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="sm" onClick={() => {}}>
-              <Settings className="h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={() => {
+              navigate('/profile');
+              if (onClose) onClose();
+            }} className="md:hidden">
+              <User className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={logout}>
-              <LogOut className="h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={() => setIsSettingsOpen(true)}>
+              <Settings className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -91,7 +105,7 @@ export function ChatSidebar() {
         {!user.isPremium && (
           <Button 
             onClick={upgradeToPremium}
-            className="w-full bg-gradient-primary hover:opacity-90 transition-smooth"
+            className="w-full bg-gradient-primary hover:opacity-90 transition-smooth hidden md:flex"
             size="sm"
           >
             <Crown className="h-4 w-4 mr-2" />
@@ -154,7 +168,13 @@ export function ChatSidebar() {
                 className={`p-3 cursor-pointer transition-smooth hover:bg-muted/50 group ${
                   activeChat === chat.id ? 'bg-primary/10 border-primary' : ''
                 }`}
-                onClick={() => setActiveChat(chat.id)}
+                onClick={() => {
+                  setActiveChat(chat.id);
+                  // Close sidebar on mobile after selecting a chat
+                  if (onClose) {
+                    onClose();
+                  }
+                }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
@@ -192,7 +212,7 @@ export function ChatSidebar() {
 
       {/* Usage Info for Free Users */}
       {!user.isPremium && (
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border hidden md:block">
           <div className="text-center">
             <Badge variant="secondary" className="mb-2">
               Free Plan
@@ -203,6 +223,7 @@ export function ChatSidebar() {
           </div>
         </div>
       )}
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }

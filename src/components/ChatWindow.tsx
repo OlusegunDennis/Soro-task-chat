@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Send, MoreVertical } from 'lucide-react';
+import { Send, MoreVertical, ArrowLeft } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useAuthStore } from '../stores/authStore';
+import './ChatSidebar.css'; // Import the CSS file
 
-export function ChatWindow() {
+export function ChatWindow({ isSidebarOpen, onCloseSidebar }: { isSidebarOpen?: boolean; onCloseSidebar?: () => void; }) {
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -19,7 +20,8 @@ export function ChatWindow() {
     activeChat, 
     typingUsers,
     sendMessage, 
-    setTyping 
+    setTyping,
+    setActiveChat
   } = useChatStore();
   const { user } = useAuthStore();
   
@@ -73,6 +75,14 @@ export function ChatWindow() {
     }, 2000);
   };
 
+  const handleBackToChats = () => {
+    setActiveChat(null);
+    // Close sidebar on mobile when going back to chat list
+    if (onCloseSidebar) {
+      onCloseSidebar();
+    }
+  };
+
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -110,10 +120,20 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-background">
+    <div className={`flex-1 flex flex-col bg-background chat-window ${isSidebarOpen ? 'shifted' : ''}`}>
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
+          {/* Back button for mobile */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="md:hidden mr-2"
+            onClick={handleBackToChats}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          
           <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
             <span className="text-white font-semibold text-sm">
               {currentChat.name.charAt(0).toUpperCase()}
